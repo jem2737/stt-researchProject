@@ -7,7 +7,7 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 # You can set log level to -1 to disable debug messages
 SetLogLevel(0)
  
-wf = wave.open("src/test/test.wav")
+wf = wave.open("data/raw/fixed.wav")
 if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getcomptype() != "NONE":
     print("Audio file must be WAV format mono PCM.")
     sys.exit(1)
@@ -29,11 +29,11 @@ while True:
     if rec.AcceptWaveform(data):
         result = json.loads(rec.Result())
         print(result["text"])
+      
         #print(rec.Result())
     else:
         result = json.loads(rec.PartialResult())
-        if not result["partial"] == "":
-            print(result["partial"])
-        #print(rec.PartialResult())
+        print(result["partial"])
+    #     print(rec.PartialResult())
 
 #print(rec.FinalResult())
