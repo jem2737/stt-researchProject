@@ -14,7 +14,7 @@ if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getcomptype() != "NONE
     print("Audio file must be WAV format mono PCM.")
     sys.exit(1)
 
-model = Model(lang="en-us")
+model = Model("src/models/vosk-model-en-us-0.22-lgraph")
 
 # You can also init model by name or with a folder path
 # model = Model(model_name="vosk-model-en-us-0.21")
@@ -29,12 +29,12 @@ while True:
     if len(data) == 0:
         break
     if rec.AcceptWaveform(data):
-        result = json.loads(rec.Result())
-        print(result["text"])
-        #print(rec.Result())
+        # result = json.loads(rec.Result())
+        # print(result["text"])
+        print(rec.Result())
     else:
-        result = json.loads(rec.PartialResult())
-        print(result["text"])
-        #print(rec.PartialResult())
+        # result = json.loads(rec.PartialResult())
+        # print(result["partial"])
+        print(rec.PartialResult())
 
 #print(rec.FinalResult())
