@@ -67,3 +67,45 @@
 * make tables and plots for the benchmark results
 * decide which model gives the best tradeoff between speed, size, and accuracy
 * write up your conclusions for Jetson deployment
+
+# Data
+
+## Custom Audio
+- I recorded custom audio data with 5 volunteers reading short scripts designed to reflect the three target classifications: normal, stressed, and distressed.
+- Each script was approximately 6 seconds long.
+- Each speaker recorded 10 clips per class.
+- This resulted in a total of 150 custom audio clips.
+
+## Supplementary Dataset Audio: Rosie-Lab BERSt
+- A dataset of 150 clips is not large enough for robust model training, so I am supplementing my custom recordings with audio from the Rosie-Lab BERSt dataset.
+- BERSt contains many metadata fields, but the fields most relevant to this project are:
+  - `phone_position`
+  - `shout_level`
+  - `affect`
+
+### Phone Position Filtering
+To make the audio as consistent as possible with the intended use case, I only use BERSt clips with phone positions that simulate a normal phone conversation. The phone position categories used are:
+- `Hold your phone next to your face with the mic facing your mouth as you would in a phone conversation`
+- `Place phone 1–2 meters away face up on any surface`
+
+### Class Mapping
+The BERSt dataset does not directly contain the classes normal, stressed, and distressed, so I define those classes using the available metadata:
+
+- **Normal**
+  - Affect: `neutral`
+  - Shout level: `no shout`
+
+- **Stressed**
+  - Affect: `anger`, `fear`, `sadness`, `disgust`, `surprise`
+  - Shout level: `no shout`
+
+- **Distressed**
+  - Affect: `anger`, `fear`, `sadness`, `disgust`, `surprise`
+  - Shout level: `shout`
+
+### BERSt Sampling Plan
+- To expand the training set, I randomly select 25 BERSt clips per class that match the required metadata.
+- These clips are used to supplement the custom audio recordings.
+- The goal of adding BERSt data is to increase dataset size and improve diversity.
+- This is especially important because my custom dataset currently includes recordings from 1 female speaker and 4 male speakers.
+  

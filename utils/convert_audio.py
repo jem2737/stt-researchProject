@@ -35,6 +35,5 @@ for folder in data_path:
                 audio = audio.astype(np.float32)
                 # Save as WAV
                 sf.write(output_file, audio, 16000, subtype="FLOAT")
-                os.remove(input_file)
                 print(file_name + ".wav fixed")
 # print(a)
