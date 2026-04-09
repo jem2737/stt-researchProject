@@ -37,7 +37,7 @@ class_models = {
     "mlp": nn.MLPClassifier(hidden_layer_sizes=(64,), max_iter=1000, solver="lbfgs", random_state=42),
 }
 
-def train(clean_data_json = None, classifier_path = None, raw_data_path = None, clean_data_path=None, prepare_data = True):
+def train(raw_data_path = None, clean_data_path=None, classifier_path = None, clean_data_json = None, prepare_data = True):
     
     # path to this script
     SCRIPT_DIR = Path(__file__).resolve().parent
@@ -128,7 +128,7 @@ def train(clean_data_json = None, classifier_path = None, raw_data_path = None, 
         jb.dump(clf, CLASSIFIER_PATH / (key + "_classifier.joblib"))
     # print(embedding_data)
     # print(data_class)
-train()
+
     
 
 
