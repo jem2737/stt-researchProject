@@ -25,9 +25,6 @@ def main():
         prepare_data = True
         if args.no_prepare_data:
             prepare_data = False
-        elif args.prepare_data:
-            prepare_data = True
-
         train(
             clean_data_json=args.clean_data_json,
             classifier_path=args.classifier_path,

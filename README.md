@@ -21,7 +21,7 @@
   * heavy breathing or vocal struggle
   * clear sense that something is wrong right now
 
-### [Scripts](/documentation/Speaker_class_scripts)
+### [Scripts](/documentation/Speaker_class_scripts/firefighter_voice_scripts.pdf)
 
 ## Audio requirements 
 * .wav
