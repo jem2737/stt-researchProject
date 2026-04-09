@@ -76,6 +76,8 @@ def train(raw_data_path = None, clean_data_path=None, classifier_path = None, cl
                                 "path": str(Path(path)),
                                 "samplerate": samplerate,
                                 "data":data})
+    
+
     embedding_data = []
     data_class = []
     for d_set in Dataset:

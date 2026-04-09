@@ -6,8 +6,26 @@ from collections import deque
 from transformers import AutoProcessor, Wav2Vec2Model
 import torch
 import joblib
+import tkinter as tk
+import threading
+# root = tk.Tk()
+# root.title("Audio Status")
+# root.geometry("300x200")
+# label = tk.Label(root, text="WAITING", font=("Arial", 24), width=20, height=10)
+# label.pack(fill="both", expand=True)
+# COLOR_MAP = {
+#     "distressed": "red",
+#     "stressed": "orange",
+#     "normal": "green",
+#     "crowd": "gray",
+#     "silence": "gray",
+#     }
+# def update_status(prediction):
+#     color = COLOR_MAP.get(prediction.lower(), "gray")
+#     label.config(text=prediction.upper(), bg=color)
 def listen(classifier_path = None):
-    CHUNK = 16000
+    
+    CHUNK = 1600
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 16000
@@ -32,6 +50,7 @@ def listen(classifier_path = None):
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
     audio_data = deque(maxlen=80000)
     print("listening")
+    
     try:
         while True:
             data = stream.read(CHUNK, exception_on_overflow=False)
@@ -52,10 +71,15 @@ def listen(classifier_path = None):
                 embedding = last_hidden_state.mean(dim=1).squeeze(0)
                 prediction = clf.predict(embedding.reshape(1, -1))
                 print(prediction)
-                print(window.shape)   # should be (80000,)
+                # update_status(prediction[0])
+                # print(window.shape)   # should be (80000,)
     except KeyboardInterrupt:
         pass
 
     stream.stop_stream()
     stream.close()
     p.terminate()
+
+
+# threading.Thread(target=listen, daemon=True).start()
+# root.mainloop()
