@@ -88,7 +88,7 @@ def listen(spk_classifier = None, type_classifier = None):
     stream.stop_stream()
     stream.close()
     p.terminate()
-listen(type_classifier="/Users/jamesmcdonald/Documents/stt-researchProject/classifier/raw/svm_linear_classifier.joblib")
+# listen(type_classifier="/Users/jamesmcdonald/Documents/stt-researchProject/classifier/raw/svm_linear_classifier.joblib")
 
 
 # threading.Thread(target=listen, daemon=True).start()

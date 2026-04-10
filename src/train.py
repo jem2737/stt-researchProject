@@ -102,7 +102,7 @@ def train(raw_data_path = None, clean_data_path=None, classifier_dir_path = None
                 log_file = LOG_DIR / f"speaker_training_{timestamp}.txt"
             write_results(log_file, model_name, model_key, class_test, y_pred)
             jb.dump(clf, CLASSIFIER_DIR_PATH/ d_key / (model_key + "_classifier.joblib"))
-train()
+# train()
 
     
 
