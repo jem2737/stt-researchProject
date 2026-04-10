@@ -1,0 +1,96 @@
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: logreg
+==================================================
+Accuracy: 0.875
+              precision    recall  f1-score   support
+
+  Distressed       1.00      0.88      0.93         8
+      Normal       0.88      0.88      0.88         8
+    Stressed       0.78      0.88      0.82         8
+
+    accuracy                           0.88        24
+   macro avg       0.88      0.88      0.88        24
+weighted avg       0.88      0.88      0.88        24
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: svm_linear
+==================================================
+Accuracy: 0.875
+              precision    recall  f1-score   support
+
+  Distressed       1.00      0.88      0.93         8
+      Normal       0.88      0.88      0.88         8
+    Stressed       0.78      0.88      0.82         8
+
+    accuracy                           0.88        24
+   macro avg       0.88      0.88      0.88        24
+weighted avg       0.88      0.88      0.88        24
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: svm_rbf
+==================================================
+Accuracy: 0.8333333333333334
+              precision    recall  f1-score   support
+
+  Distressed       0.89      1.00      0.94         8
+      Normal       0.86      0.75      0.80         8
+    Stressed       0.75      0.75      0.75         8
+
+    accuracy                           0.83        24
+   macro avg       0.83      0.83      0.83        24
+weighted avg       0.83      0.83      0.83        24
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: knn
+==================================================
+Accuracy: 0.6666666666666666
+              precision    recall  f1-score   support
+
+  Distressed       0.67      1.00      0.80         8
+      Normal       0.70      0.88      0.78         8
+    Stressed       0.50      0.12      0.20         8
+
+    accuracy                           0.67        24
+   macro avg       0.62      0.67      0.59        24
+weighted avg       0.62      0.67      0.59        24
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: rf
+==================================================
+Accuracy: 0.8333333333333334
+              precision    recall  f1-score   support
+
+  Distressed       0.88      0.88      0.88         8
+      Normal       0.88      0.88      0.88         8
+    Stressed       0.75      0.75      0.75         8
+
+    accuracy                           0.83        24
+   macro avg       0.83      0.83      0.83        24
+weighted avg       0.83      0.83      0.83        24
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: mlp
+==================================================
+Accuracy: 0.8333333333333334
+              precision    recall  f1-score   support
+
+  Distressed       0.88      0.88      0.88         8
+      Normal       0.88      0.88      0.88         8
+    Stressed       0.75      0.75      0.75         8
+
+    accuracy                           0.83        24
+   macro avg       0.83      0.83      0.83        24
+weighted avg       0.83      0.83      0.83        24
+

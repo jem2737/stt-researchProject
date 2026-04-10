@@ -36,5 +36,5 @@ def convert_audio(raw_data_path=None,clean_data_path=None):
             audio = audio.astype(np.float32)
             # Save as WAV
             sf.write(output_file, audio, 16000, subtype="FLOAT")
-            print(file_name + ".wav fixed")
+            # print(file_name + ".wav fixed")
 

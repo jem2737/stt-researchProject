@@ -16,7 +16,8 @@ def main():
     train_parser.add_argument("--no-prepare-data", action="store_true")
     # listen command
     listen_parser = subparsers.add_parser("listen", help="Run live listening")
-    listen_parser.add_argument("--classifier-path", type=str, default=None)
+    listen_parser.add_argument("--type_classifier-path", type=str, default=None)
+    listen_parser.add_argument("--spk_classifier-path", type=str, default=None)
 
     args = parser.parse_args()
 
@@ -28,14 +29,14 @@ def main():
             prepare_data_bool = True
         train(
             clean_data_json=args.clean_data_json,
-            classifier_path=args.classifier_path,
+            classifier_dir_path=args.classifier_path,
             raw_data_path=args.raw_data_path,
             clean_data_path=args.clean_data_path,
             prepare_data=prepare_data_bool
         )
 
     elif args.command == "listen":
-        listen(classifier_path=args.classifier_path)
+        listen(spk_classifier=args.spk_classifier_path,type_classifier=args.type_classifier_path)
 
 if __name__ == "__main__":
     main()

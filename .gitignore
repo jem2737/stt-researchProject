@@ -4,3 +4,9 @@ __pycache__/
 *.wav
 classifier/
 Crowd/
+Distressed/
+Stressed/
+Normal/
+no_speaker/
+speaker/
+.DS_Store

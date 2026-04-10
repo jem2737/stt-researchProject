@@ -1,9 +1,5 @@
 from pathlib import Path
-from scipy.io import wavfile
-import json
-import re
 import os
-import torch
 from transformers import AutoProcessor, Wav2Vec2Model
 import joblib as jb
 import sklearn.metrics as metrics
@@ -11,8 +7,6 @@ import sklearn.model_selection as ms
 import sklearn.pipeline as pipe
 import sklearn.preprocessing as prep
 import shutil
-import convert_audio
-import make_path_json
 ###################################
 #   these are the classification  #
 #   models I am going to use      #
@@ -22,6 +16,8 @@ import sklearn.linear_model as lin
 import sklearn.neighbors as nb
 import sklearn.ensemble as em
 import sklearn.neural_network as nn
+import embed
+from datetime import datetime
 
 model_name = "facebook/wav2vec2-base"
 processor = AutoProcessor.from_pretrained(model_name)
@@ -37,22 +33,30 @@ class_models = {
     "mlp": nn.MLPClassifier(hidden_layer_sizes=(64,), max_iter=1000, solver="lbfgs", random_state=42),
 }
 
-def train(raw_data_path = None, clean_data_path=None, classifier_path = None, clean_data_json = None, prepare_data = True):
-    
-    # path to this script
+def write_results(log_file, model_name, classifier ,y_true, y_pred):
+    with open(log_file, "a") as f:
+        f.write(f"\n{'='*50}\n")
+        f.write(f"Model: {model_name}\n")
+        f.write(f"Model: {classifier}\n")
+        f.write(f"{'='*50}\n")
+        f.write(f"Accuracy: {metrics.accuracy_score(y_true, y_pred)}\n")
+        f.write(metrics.classification_report(y_true, y_pred))
+        f.write("\n")
+
+def train(raw_data_path = None, clean_data_path=None, classifier_dir_path = None, clean_data_json = None, prepare_data = True):
     SCRIPT_DIR = Path(__file__).resolve().parent
-    # project root (adjust depending on where script lives)
     PROJECT_ROOT = SCRIPT_DIR.parent
-    Dataset = []
-    # json file
+    LOG_DIR = SCRIPT_DIR / "logs"
+    LOG_DIR.mkdir(exist_ok=True)
+
     if clean_data_json is None:
         json_path = PROJECT_ROOT / "data" / "audio_paths.json"
     else:
         json_path = Path(clean_data_json)
-    if classifier_path is None:
-        CLASSIFIER_PATH = PROJECT_ROOT / "classifier"
+    if classifier_dir_path is None:
+        CLASSIFIER_DIR_PATH = PROJECT_ROOT / "classifier"
     else:
-        CLASSIFIER_PATH = Path(classifier_path)
+        CLASSIFIER_DIR_PATH = Path(classifier_dir_path)
     if raw_data_path is None:
         RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw"
     else:
@@ -61,75 +65,44 @@ def train(raw_data_path = None, clean_data_path=None, classifier_path = None, cl
         CLEAN_DATA_PATH = PROJECT_ROOT / "data" / "clean_data"
     else:
         CLEAN_DATA_PATH = Path(clean_data_path)
-    if prepare_data:
-        convert_audio.convert_audio(RAW_DATA_PATH,CLEAN_DATA_PATH)
-        make_path_json.make_path_json(CLEAN_DATA_PATH,json_path)
-    with open(json_path,'r') as f:
-        audio_paths = json.load(f)
-    # reading in the data & creating a dataset
-    for key in audio_paths.keys():
-        for path in audio_paths[key]:
-            label = lambda text: re.split(r"[/]",text)[len(re.split(r"[/]",text))-1]
-            samplerate, data = wavfile.read(Path(path))
-            Dataset.append({"class":key,
-                                "label":label(path),
-                                "path": str(Path(path)),
-                                "samplerate": samplerate,
-                                "data":data})
-    
-
-    embedding_data = []
-    data_class = []
-    for d_set in Dataset:
-        sr = d_set["samplerate"]
-        data = d_set["data"]
-        inputs = processor(
-            data,
-            sampling_rate=sr,
-            return_tensors="pt",
-            padding=False
-        )
-        with torch.no_grad():
-            outputs = model(**inputs)
-        last_hidden_state = outputs.last_hidden_state      # [batch, time, hidden]
-        embedding = last_hidden_state.mean(dim=1).squeeze(0)
-        embedding_data.append(embedding.numpy())
-        data_class.append(d_set["class"])
-
-    emb_train, emb_test, class_train, class_test = ms.train_test_split(
-        embedding_data, data_class,
-        test_size=0.2,
-        random_state=42,
-        stratify=data_class
-    )
-    print("split")
-    
+    Datasets = {}
+    Datasets['raw'] = embed.embed(raw_data_path,clean_data_path,clean_data_json,prepare_data,speaker_test=False)
+    Datasets['raw_speaker'] = embed.embed(raw_data_path,clean_data_path,clean_data_json,prepare_data,speaker_test=True)
+    # print(Datasets['raw'][1])
+    # print(Datasets['raw_speaker'][1])
+    # print(Datasets.keys())
     try:
-        shutil.rmtree(CLASSIFIER_PATH)
+        shutil.rmtree(CLASSIFIER_DIR_PATH)
     except:
         pass
-    os.mkdir(CLASSIFIER_PATH)
-    for key in class_models:
-        print("############################")
-        print('')
-        print("training " + key)
-        print('')
-        print("############################")
-        clf = pipe.make_pipeline(
-            prep.StandardScaler(),
-            class_models[key]
-        )
+    os.mkdir(CLASSIFIER_DIR_PATH)
+    for d_key in Datasets.keys():
+        embedding_data = Datasets[d_key][0]
+        data_class = Datasets[d_key][1]
+        emb_train, emb_test, class_train, class_test = ms.train_test_split(
+            embedding_data, data_class,
+            test_size=0.2,
+            random_state=42,
+            stratify=data_class
+        )    
+        os.mkdir(CLASSIFIER_DIR_PATH / d_key)
+        for model_key in class_models:
+            clf = pipe.make_pipeline(
+                prep.StandardScaler(),
+                class_models[model_key]
+            )
 
-        clf.fit(emb_train, class_train)
+            clf.fit(emb_train, class_train)
 
-        y_pred = clf.predict(emb_test)
-
-        print("Accuracy:", metrics.accuracy_score(class_test, y_pred))
-        print(metrics.classification_report(class_test, y_pred))
-
-        jb.dump(clf, CLASSIFIER_PATH / (key + "_classifier.joblib"))
-    # print(embedding_data)
-    # print(data_class)
+            y_pred = clf.predict(emb_test)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            if d_key == "raw":
+                log_file = LOG_DIR / f"emotion_training_{timestamp}.txt"
+            if d_key == "raw_speaker":
+                log_file = LOG_DIR / f"speaker_training_{timestamp}.txt"
+            write_results(log_file, model_name, model_key, class_test, y_pred)
+            jb.dump(clf, CLASSIFIER_DIR_PATH/ d_key / (model_key + "_classifier.joblib"))
+train()
 
     
 

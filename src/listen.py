@@ -23,20 +23,27 @@ import threading
 # def update_status(prediction):
 #     color = COLOR_MAP.get(prediction.lower(), "gray")
 #     label.config(text=prediction.upper(), bg=color)
-def listen(classifier_path = None):
+def listen(spk_classifier = None, type_classifier = None):
     
-    CHUNK = 1600
+    CHUNK = 16000
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 16000
     SCRIPT_DIR = Path(__file__).resolve().parent
     PROJECT_ROOT = SCRIPT_DIR.parent
-    if classifier_path is None:
+    if spk_classifier is None:
         CLASSIFIER_MODEL = "logreg_classifier.joblib"
-        clf = joblib.load(PROJECT_ROOT / "classifier" / CLASSIFIER_MODEL)
+        clf_spk = joblib.load(PROJECT_ROOT / "classifier" / "raw_speaker" / CLASSIFIER_MODEL)
     else:
-        CLASSIFIER_MODEL = Path(classifier_path)
-        clf = joblib.load(CLASSIFIER_MODEL)
+        CLASSIFIER_MODEL = spk_classifier
+        clf_spk = joblib.load(CLASSIFIER_MODEL)
+        
+    if type_classifier is None:
+        CLASSIFIER_MODEL = "logreg_classifier.joblib"
+        clf_type = joblib.load(PROJECT_ROOT / "classifier" / "raw" / CLASSIFIER_MODEL)
+    else:
+        CLASSIFIER_MODEL = type_classifier
+        clf_type = joblib.load(CLASSIFIER_MODEL)
     
 
     model_name = "facebook/wav2vec2-base"
@@ -69,16 +76,19 @@ def listen(classifier_path = None):
                     outputs = model(**inputs)
                 last_hidden_state = outputs.last_hidden_state      # [batch, time, hidden]
                 embedding = last_hidden_state.mean(dim=1).squeeze(0)
-                prediction = clf.predict(embedding.reshape(1, -1))
-                print(prediction)
-                # update_status(prediction[0])
-                # print(window.shape)   # should be (80000,)
+                spk_prediction = clf_spk.predict(embedding.reshape(1, -1))
+                if spk_prediction[0] == "speaker":
+                    class_prediction = clf_type.predict(embedding.reshape(1, -1))
+                    print(class_prediction)
+                else:
+                    print("no speaker detected")
     except KeyboardInterrupt:
         pass
 
     stream.stop_stream()
     stream.close()
     p.terminate()
+listen(type_classifier="/Users/jamesmcdonald/Documents/stt-researchProject/classifier/raw/svm_linear_classifier.joblib")
 
 
 # threading.Thread(target=listen, daemon=True).start()

@@ -1,0 +1,11 @@
+numpy
+scipy
+soundfile
+librosa
+pyaudio
+torch
+transformers
+scikit-learn
+joblib
+datasets
+huggingface_hub

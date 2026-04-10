@@ -1,0 +1,90 @@
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: logreg
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: svm_linear
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: svm_rbf
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: knn
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: rf
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
+
+==================================================
+Model: facebook/wav2vec2-base
+Model: mlp
+==================================================
+Accuracy: 1.0
+              precision    recall  f1-score   support
+
+  no_speaker       1.00      1.00      1.00        25
+     speaker       1.00      1.00      1.00        24
+
+    accuracy                           1.00        49
+   macro avg       1.00      1.00      1.00        49
+weighted avg       1.00      1.00      1.00        49
+
