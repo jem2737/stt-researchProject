@@ -1,110 +1,265 @@
-# Think[box] Micro-Grant
-## Intended File Structure
-## Stress class Defs
-* Normal
-  * Steady speaking rate
-  * Normal loudness
-  * Regular breathing
-  * Clear articulation
-  * No strong tension, panic, or strain in the voice
-* Stressed
-  * Somewhat faster or uneven speaking rate
-  * Raised vocal intensity or tighter tone
-  * Mild shakiness, breathiness, or tension
-  * More effort in the voice
-  * Sounds pressured, frustrated, or strained, but still somewhat controlled
-* Distressed
-  * strong urgency or panic in the voice
-  * irregular pacing or broken speech
-  * yelling, gasping, strained shouting, or clipped words
-  * unstable loudness
-  * heavy breathing or vocal struggle
-  * clear sense that something is wrong right now
+# STT Research Project
 
-### [Scripts](/documentation/Speaker_class_scripts/firefighter_voice_scripts.pdf)
+Speech-based vocal-state classification using **wav2vec2 embeddings** and **scikit-learn classifiers**, with a workflow designed for both offline experiments and live microphone inference.
 
-## Audio requirements 
-* .wav
-* mono if possible
-* 16-bit PCM
-* 16 kHz or 44.1 kHz
+This repository explores whether a lightweight pipeline can distinguish vocal states such as **normal**, **stressed**, and **distressed** from speech audio, while also separating **speaker-presence detection** from **emotion classification** during live use.
 
-# Data
+## Overview
 
-## Custom Audio
-- I recorded custom audio data with 5 volunteers reading short scripts designed to reflect the three target classifications: normal, stressed, and distressed.
-- Each script was approximately 6 seconds long.
-- Each speaker recorded 10 clips per class.
-- This resulted in a total of 150 custom audio clips.
+The project follows a two-stage pipeline:
 
-## Supplementary Dataset Audio: Rosie-Lab BERSt
-- A dataset of 150 clips is not large enough for robust model training, so I am supplementing my custom recordings with audio from the Rosie-Lab BERSt dataset.
-- BERSt contains many metadata fields, but the fields most relevant to this project are:
-  - `phone_position`
-  - `shout_level`
-  - `affect`
+1. **Speaker detection** checks whether a meaningful speaker is present.
+2. **Vocal-state classification** predicts the label only when speech is detected.
 
-### Phone Position Filtering
-To make the audio as consistent as possible with the intended use case, I only use BERSt clips with phone positions that simulate a normal phone conversation. The phone position categories used are:
-- `Hold your phone next to your face with the mic facing your mouth as you would in a phone conversation`
-- `Place phone 1–2 meters away face up on any surface`
+This design helps avoid forcing silence, background noise, or crowd-like audio into an emotion label when there is no clear speaker to classify.
 
-### Class Mapping
-The BERSt dataset does not directly contain the classes normal, stressed, and distressed, so I define those classes using the available metadata:
+The core embedding backbone is **`facebook/wav2vec2-base`**, and the extracted embeddings are used to train several classical machine learning models for comparison.
 
-- **Normal**
-  - Affect: `neutral`
-  - Shout level: `no shout`
+## Why This Project
 
-- **Stressed**
-  - Affect: `anger`, `fear`, `sadness`, `disgust`, `surprise`
-  - Shout level: `no shout`
+This project was built as part of a speech / embedded AI research workflow focused on:
 
-- **Distressed**
-  - Affect: `anger`, `fear`, `sadness`, `disgust`, `surprise`
-  - Shout level: `shout`
+- stress-related vocal-state classification
+- lightweight model comparison
+- live audio inference from a microphone
+- future deployment and benchmarking on platforms such as the **NVIDIA Jetson Orin Nano**
 
-### BERSt Sampling Plan
-- To expand the training set, I randomly select 25 BERSt clips per class that match the required metadata.
-- These clips are used to supplement the custom audio recordings.
-- The goal of adding BERSt data is to increase dataset size and improve diversity.
-- This is especially important because my custom dataset currently includes recordings from 1 female speaker and 4 male speakers.
-  
-# project steps:
-* clearly define the project goal
-* decide exactly what you are benchmarking
-* choose the task you care about
-* choose the models you want to compare
-* set up the Jetson software environment
-* confirm each model can run on the Jetson
-* collect and organize your audio dataset
-* make sure all files are in a consistent format
-* label the fi*les clearly
-* create a repeatable audio loading pipeline
-* inspect the dataset for bad recordings, silence, clipping, or noise issues
-* decide how the audio will be fed into each model
-* preprocess the audio into the format each model expects
-* build a script that runs inference on one file
-* build a script that runs inference on the full dataset
-* record each model’s predicted output
-* measure inference time per clip
-* measure total runtime
-* measure memory usage
-* measure CPU usage
-* measure GPU usage if applicable
-* measure power usage if you are including efficiency
-* record model size
-* record preprocessing time
-* separate preprocessing time from inference time
-* evaluate accuracy or classification performance
-* create a confusion matrix if it is a classification task
-* compare results across all models
-* compare results across different audio lengths if relevant
-* compare results across different recording conditions if relevant
-* document all software versions and settings
-* document Jetson hardware configuration
-* make sure the benchmarking procedure is repeatable
-* save all results in a structured format
-* make tables and plots for the benchmark results
-* decide which model gives the best tradeoff between speed, size, and accuracy
-* write up your conclusions for Jetson deployment
+Rather than training a large end-to-end speech classifier from scratch, this repository uses pretrained speech embeddings and classical downstream models to keep the workflow easier to inspect, benchmark, and iterate on.
+
+## Features
+
+- Audio conversion into a consistent WAV format
+- File-path manifest generation from class-organized folders
+- Embedding extraction with **wav2vec2**
+- Training for multiple scikit-learn classifiers
+- Separate training for:
+  - speaker-presence detection
+  - vocal-state classification
+- Live microphone inference using **PyAudio**
+- Saved classifier artifacts with **joblib**
+- Training logs written to `src/logs/`
+
+## Model Stack
+
+### Embedding model
+- `facebook/wav2vec2-base`
+
+### Classifiers
+- Logistic Regression
+- SVM (linear)
+- SVM (RBF)
+- k-NN
+- Random Forest
+- MLP
+
+These models are trained on fixed-length wav2vec2 embeddings rather than raw waveforms directly.
+
+## Repository Structure
+
+```text
+stt-researchProject/
+├── data/
+├── documentation/
+│   ├── Speaker_class_scripts/
+│   └── file_structure.md
+├── src/
+│   ├── logs/
+│   ├── cli.py
+│   ├── convert_audio.py
+│   ├── embed.py
+│   ├── listen.py
+│   ├── make_path_json.py
+│   └── train.py
+├── README.md
+└── requirements.txt
+```
+
+## How It Works
+
+### 1. Convert raw audio
+`convert_audio.py` standardizes audio files into a format that can be used consistently across training and inference.
+
+### 2. Build a manifest
+`make_path_json.py` scans the cleaned audio folders and creates a JSON mapping of file paths grouped by class.
+
+### 3. Extract embeddings
+`embed.py` loads audio, runs it through wav2vec2, and converts the hidden states into a fixed-size embedding vector.
+
+### 4. Train classifiers
+`train.py` trains multiple scikit-learn models on the embeddings and saves the trained classifiers.
+
+### 5. Run live inference
+`listen.py` captures microphone audio, builds a rolling window, embeds the current audio chunk, and applies the two-stage decision process:
+- first check for speaker presence
+- then classify vocal state if speech is present
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/jem2737/stt-researchProject.git
+cd stt-researchProject
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Dependencies
+
+The project currently depends on packages including:
+
+- numpy
+- scipy
+- soundfile
+- librosa
+- pyaudio
+- torch
+- transformers
+- scikit-learn
+- joblib
+- datasets
+- huggingface_hub
+
+## Data Expectations
+
+The preprocessing pipeline expects audio to be organized by class in folders.
+
+Example:
+
+```text
+data/raw/
+├── normal/
+├── stressed/
+└── distressed/
+```
+
+For speaker-presence training, a separate dataset structure can also be used.
+
+### Preferred audio format
+During preprocessing, files are converted toward a standard format such as:
+
+- WAV
+- mono
+- 16 kHz
+- float32
+
+## Usage
+
+### Train the models
+
+Basic command:
+
+```bash
+python src/cli.py train
+```
+
+Optional arguments:
+
+```bash
+python src/cli.py train \
+  --raw-data-path path/to/raw \
+  --clean-data-path path/to/clean_data \
+  --classifier-path path/to/classifier \
+  --clean-data-json path/to/audio_paths.json \
+  --prepare-data
+```
+
+Skip preprocessing if your data is already cleaned and your JSON manifest already exists:
+
+```bash
+python src/cli.py train --no-prepare-data
+```
+
+### Run live listening
+
+Basic command:
+
+```bash
+python src/cli.py listen
+```
+
+Optional classifier paths:
+
+```bash
+python src/cli.py listen \
+  --type_classifier-path path/to/emotion_classifier.joblib \
+  --spk_classifier-path path/to/speaker_classifier.joblib
+```
+
+## Outputs
+
+After training, the project writes:
+
+- trained classifier files under `classifier/`
+- logs under `src/logs/`
+
+Example classifier structure:
+
+```text
+classifier/
+├── raw/
+└── raw_speaker/
+```
+
+## Live Inference Behavior
+
+The live pipeline is designed around a rolling audio window and is meant to avoid unnecessary classification when there is no meaningful speaker in the input.
+
+This is especially useful when testing with:
+- silence
+- background noise
+- multiple voices
+- inconsistent microphone conditions
+
+By separating speaker detection from emotion classification, the system can behave more predictably during real-time use.
+
+## Jetson / Edge Deployment Notes
+
+This project is a good fit for benchmarking on edge hardware because it separates the pipeline into clear stages:
+
+- audio capture
+- preprocessing
+- embedding generation
+- lightweight classifier inference
+
+That makes it easier to evaluate tradeoffs such as:
+
+- latency
+- CPU vs GPU benefit
+- memory usage
+- deployability
+- overall live responsiveness
+
+For future Jetson-specific deployment, likely areas of focus include:
+- ONNX / TensorRT acceleration for embeddings
+- memory usage during embedding generation
+- whether GPU acceleration materially improves end-to-end live performance
+
+## Current Status
+
+This repository is best described as a **research / prototype workflow** rather than a polished package.
+
+It is useful for:
+- experimenting with speech classification pipelines
+- comparing classical classifiers on speech embeddings
+- testing live audio inference
+- building toward an embedded deployment benchmark
+
+## Possible Future Improvements
+
+- Add example audio samples
+- Add benchmark tables and plots
+- Add confusion matrices to the README
+- Add confidence scores during live inference
+- Add Jetson-specific setup instructions
+- Add reproducible experiment configs
+- Add a dataset preparation walkthrough with examples
+- Add screenshots or diagrams of the live pipeline
+
+## Author
+
+**James McDonald**
