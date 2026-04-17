@@ -8,21 +8,21 @@ import torch
 import joblib
 import tkinter as tk
 import threading
-# root = tk.Tk()
-# root.title("Audio Status")
-# root.geometry("300x200")
-# label = tk.Label(root, text="WAITING", font=("Arial", 24), width=20, height=10)
-# label.pack(fill="both", expand=True)
-# COLOR_MAP = {
-#     "distressed": "red",
-#     "stressed": "orange",
-#     "normal": "green",
-#     "crowd": "gray",
-#     "silence": "gray",
-#     }
-# def update_status(prediction):
-#     color = COLOR_MAP.get(prediction.lower(), "gray")
-#     label.config(text=prediction.upper(), bg=color)
+root = tk.Tk()
+root.title("Audio Status")
+root.geometry("300x200")
+label = tk.Label(root, text="WAITING", font=("Arial", 24), width=20, height=10)
+label.pack(fill="both", expand=True)
+COLOR_MAP = {
+    "distressed": "red",
+    "stressed": "orange",
+    "normal": "green",
+    "crowd": "gray",
+    "silence": "gray",
+    }
+def update_status(prediction):
+    color = COLOR_MAP.get(prediction.lower(), "gray")
+    label.config(text=prediction.upper(), bg=color)
 def listen(spk_classifier = None, type_classifier = None):
     
     CHUNK = 16000
@@ -88,8 +88,7 @@ def listen(spk_classifier = None, type_classifier = None):
     stream.stop_stream()
     stream.close()
     p.terminate()
-# listen(type_classifier="/Users/jamesmcdonald/Documents/stt-researchProject/classifier/raw/svm_linear_classifier.joblib")
 
 
-# threading.Thread(target=listen, daemon=True).start()
-# root.mainloop()
+threading.Thread(target=listen, daemon=True).start()
+root.mainloop()
